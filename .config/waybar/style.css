@@ -1,0 +1,177 @@
+@import url("file:///home/tan/.cache/wal/colors-waybar.css");
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: FontAwesome, JetBrains Mono Bold, sans-serif;
+    min-height: 20px;
+}
+window#waybar {
+    background: transparent;
+}
+window#waybar.hidden {
+    opacity: 0.2;
+}
+#workspaces {
+    margin-right: 8px;
+    border-radius: 10px;
+    transition: none;
+    background: alpha(@background, 0.85);
+}
+#workspaces button {
+    transition: none;
+    color: alpha(@foreground, 0.5);
+    background: transparent;
+    padding: 5px;
+    font-size: 18px;
+}
+#workspaces button.persistent {
+    color: alpha(@foreground, 0.5);
+    font-size: 12px;
+}
+#workspaces button:hover {
+    transition: none;
+    box-shadow: inherit;
+    text-shadow: inherit;
+    border-radius: inherit;
+    color: @background;
+    background: alpha(@foreground, 0.5);
+}
+#workspaces button.active {
+    background: @color4;
+    color: @background;
+    border-radius: inherit;
+}
+#workspaces button.urgent {
+    background: @color1;
+    color: @background;
+    border-radius: inherit;
+}
+#language {
+    margin-right: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+#submap {
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @color1;
+    background: alpha(@background, 0.85);
+}
+#clock {
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px 0px 0px 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+#custom-weather {
+    padding-right: 16px;
+    border-radius: 0px 10px 10px 0px;
+    transition: none;
+    color: @color5;
+    background: alpha(@background, 0.85);
+}
+#pulseaudio {
+    margin-right: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+#pulseaudio.muted {
+    background-color: alpha(@color6, 0.7);
+    color: @background;
+}
+#custom-mem {
+    margin-right: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+#cpu {
+    margin-right: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+
+#disk, #bluetooth {
+    margin-right: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+#bluetooth.connected {
+    color: @color4;
+}
+#bluetooth.off, #bluetooth.disabled {
+    color: alpha(@foreground, 0.4);
+}
+#backlight {
+    margin-right: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+#battery {
+    margin-right: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+#battery.charging {
+    color: @background;
+    background-color: @color2;
+}
+#battery.warning:not(.charging) {
+    background-color: @color3;
+    color: @background;
+}
+#battery.critical:not(.charging) {
+    background-color: @color1;
+    color: @background;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+#tray {
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    transition: none;
+    color: @foreground;
+    background: alpha(@background, 0.85);
+}
+@keyframes blink {
+    to {
+        background-color: @foreground;
+        color: @background;
+    }
+}

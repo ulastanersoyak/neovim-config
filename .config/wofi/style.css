@@ -1,0 +1,52 @@
+@import url("file:///home/tan/.cache/wal/colors-waybar.css");
+
+* {
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 14px;
+}
+
+window {
+  margin: 0px;
+  border: 2px solid @color4;
+  border-radius: 12px;
+  background-color: alpha(@background, 0.9);
+}
+
+#input {
+  margin: 8px;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  color: @foreground;
+  background-color: alpha(@color0, 0.6);
+}
+
+#input:focus {
+  outline: none;
+  border: 1px solid @color4;
+}
+
+#inner-box, #outer-box {
+  margin: 5px;
+  background-color: transparent;
+}
+
+#scroll { margin: 0px; }
+
+#text {
+  margin: 5px;
+  color: @foreground;
+}
+
+#entry {
+  border-radius: 8px;
+  padding: 4px;
+}
+
+#entry:selected {
+  background-color: alpha(@color4, 0.4);
+}
+
+#entry:selected #text {
+  color: @foreground;
+}
