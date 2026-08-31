@@ -1,0 +1,106 @@
+#!/bin/bash
+# wallset — one command to change the wallpaper and recolor the whole setup.
+#
+#   wallset <image> [accent-slot]     e.g.  wallset ~/Pictures/tree.jpg
+#                                          wallset ~/Pictures/tree.jpg color5
+#   wallset --reapply                 redo colors for the current wallpaper
+#                                     (after a Panacea update, for example)
+#
+# Colors come from pywal. Then, in order:
+#   pywalfox (Firefox) · palette.conf + palette.sh (foot, fish, btop, nvim,
+#   fastfetch, sddm) · settings.json + Themes.js (the pill: top bar, launcher,
+#   lock screen) · theme.lua (Hyprland borders) · switch_theme.sh (wallpaper)
+#   · alacritty (via import) · fish (via conf.d/zz_pywal.fish) — then restart
+#   foot and the pill.
+
+set -euo pipefail
+
+HYPR="$HOME/.config/hypr"
+PAN="$HOME/.config/panacea"
+STATE="$HYPR/wallpaper.conf"
+SLOT="color4"
+
+# ---------------------------------------------------------------- arguments
+if [ "${1:-}" = "--reapply" ]; then
+    WALL=$(grep -m1 '^\$wallpaper' "$STATE" 2>/dev/null | cut -d= -f2- | sed 's/^ *//; s/ *$//')
+    WALL="${WALL/#\~/$HOME}"
+    [ -n "$WALL" ] || { echo "no current wallpaper recorded in $STATE" >&2; exit 1; }
+    [ -n "${2:-}" ] && SLOT="$2"
+else
+    WALL="${1:?usage: wallset <image> [accent-slot] | wallset --reapply}"
+    WALL="${WALL/#\~/$HOME}"
+    [ -n "${2:-}" ] && SLOT="$2"
+fi
+[ -f "$WALL" ] || { echo "no such file: $WALL" >&2; exit 1; }
+
+for dep in wal jq; do
+    command -v "$dep" >/dev/null || { echo "missing: $dep" >&2; exit 1; }
+done
+
+# ---------------------------------------------------------------- 1. pywal
+echo "→ pywal"
+wal -n -q -i "$WALL"                       # colors only; wallpaper set below
+J="$HOME/.cache/wal/colors.json"
+BG=$(jq -r .special.background "$J")
+FG=$(jq -r .special.foreground "$J")
+ACC=$(jq -r ".colors.$SLOT" "$J")
+echo "  bg=$BG  fg=$FG  accent=$ACC ($SLOT)"
+
+# -------------------------------------------------------------- 2. firefox
+if command -v pywalfox >/dev/null; then
+    echo "→ pywalfox"
+    pywalfox update >/dev/null 2>&1 || true
+fi
+
+# ---------------------------------------- 3. panacea palette -> palette.sh
+echo "→ palette.conf + palette.sh"
+sed -i \
+    -e "s|^\$accent_color *=.*|\$accent_color = $ACC|" \
+    -e "s|^\$bg_color *=.*|\$bg_color = $BG|" \
+    -e "s|^\$fg_color *=.*|\$fg_color = $FG|" \
+    -e "s|^\$term_bg *=.*|\$term_bg = $BG|" \
+    "$HYPR/palette.conf"
+"$HYPR/scripts/palette.sh" >/dev/null 2>&1 || true
+
+# foot: palette.sh writes [colors-dark], which foot only honors when the
+# desktop portal reports dark mode. Make it unconditional.
+[ -f "$HOME/.config/foot/theme" ] && sed -i 's/^\[colors-dark\]/[colors]/' "$HOME/.config/foot/theme"
+
+# ------------------------------------------------- 4. the pill (quickshell)
+echo "→ pill"
+if [ -f "$PAN/settings.json" ]; then
+    jq --arg on "$ACC" --arg fg "$FG" '.colOn = $on | .colFg = $fg' "$PAN/settings.json" \
+        > "$PAN/settings.json.tmp" && mv "$PAN/settings.json.tmp" "$PAN/settings.json"
+fi
+# background is hard-wired in the theme table
+if [ -f "$PAN/Themes.js" ]; then
+    sed -i -E "s|(id: \"default\",[^}]*bg: \")#[0-9a-fA-F]{6}|\1$BG|" "$PAN/Themes.js"
+fi
+
+# ------------------------------------------------- 5. hyprland window borders
+if [ -f "$HYPR/theme.lua" ]; then
+    A="${ACC#\#}"; B="${BG#\#}"
+    sed -i \
+        -e "s|active_border *=.*|active_border = { colors = { \"rgba(${A}ff)\", \"rgba(${B}ff)\" }, angle = 45 },|" \
+        -e "s|inactive_border *=.*|inactive_border = \"rgba(${B}aa)\",|" \
+        "$HYPR/theme.lua"
+fi
+
+# ---------------------------------------------------------- 6. wallpaper
+echo "→ wallpaper"
+"$HYPR/scripts/switch_theme.sh" "$WALL" >/dev/null 2>&1 || true
+
+# ----------------------------------------------------------- 7. restarts
+echo "→ reload"
+hyprctl reload >/dev/null 2>&1 || true
+
+if pgrep -x foot >/dev/null; then
+    pkill -x foot; sleep 0.3
+    setsid foot --server >/dev/null 2>&1 &
+fi
+
+pkill -x qs 2>/dev/null || true
+sleep 0.5
+setsid env QSG_RENDER_LOOP=threaded qs -c "$PAN" >/dev/null 2>&1 &
+
+echo "done. open a new terminal for shell colors."
