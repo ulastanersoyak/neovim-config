@@ -79,3 +79,4 @@ abbr -a ff 'fastfetch'
 
 
 set -gx PATH "$HOME/.local/bin" $PATH
+alias dot 'git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
